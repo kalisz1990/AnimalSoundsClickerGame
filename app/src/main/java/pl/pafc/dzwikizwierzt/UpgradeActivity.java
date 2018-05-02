@@ -5,13 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class UpgradeActivity extends AppCompatActivity {
-
-    ImageView cowInGlasses;
 
     TextView cowNumbersTextView2;
     TextView catNumbersTextView2;
@@ -42,7 +39,6 @@ public class UpgradeActivity extends AppCompatActivity {
         cowNumbers  = bundle.getInt("cow");
         catNumbers  = bundle.getInt("cat");
         birdNumbers = bundle.getInt("bird");
-
         if (bundle.getBoolean("cowInGlasses")) {
             cow.setCowInGlassesUlkocked(true);
             cowInGlassesButton.setEnabled(false);
