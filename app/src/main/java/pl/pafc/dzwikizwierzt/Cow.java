@@ -2,15 +2,24 @@ package pl.pafc.dzwikizwierzt;
 
 public class Cow {
 
-    private int     cowNumbers = 0;
-    private boolean cowInGlassesUnlkocked = false;
+    private int     cowNumbers = 15 ;
+    private boolean cowInGlassesUnlocked = false;
+    private boolean cowPurpleUnlocked = false;
 
-    public boolean isCowInGlassesUnlkocked() {
-        return cowInGlassesUnlkocked;
+    public boolean isCowInGlassesUnlocked() {
+        return cowInGlassesUnlocked;
     }
 
     public void setCowInGlassesUlkocked(boolean cowInGlassesUnlkocked) {
-        this.cowInGlassesUnlkocked = cowInGlassesUnlkocked;
+        this.cowInGlassesUnlocked = cowInGlassesUnlkocked;
+    }
+
+    public boolean isCowPurpleUnlocked() {
+        return cowPurpleUnlocked;
+    }
+
+    public void setCowPurpleUnlocked(boolean cowPurpleUnlocked) {
+        this.cowPurpleUnlocked = cowPurpleUnlocked;
     }
 
     public void setCowNumbers(int cowNumbers) {
