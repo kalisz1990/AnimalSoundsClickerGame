@@ -1,16 +1,12 @@
 package pl.pafc.dzwikizwierzt;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.support.annotation.DrawableRes;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView cat1Small;
     ImageView cat2Small;
     ImageView birdImage;
+    ImageView bird1Small;
     ImageView catMini;
     ImageView birdMini;
     ImageView soundOff;
@@ -46,12 +43,18 @@ public class MainActivity extends AppCompatActivity {
 
     Button upgradeButton;
 
-    @DrawableRes int drawableResCow = R.drawable.cow_animation;
-    @DrawableRes int drawableResCat = R.drawable.cat_anim;
+    @DrawableRes
+    int drawableResCow = R.drawable.cow_animation;
+    @DrawableRes
+    int drawableResCat = R.drawable.cat_anim;
+    @DrawableRes
+    int drawableResBird = R.drawable.bird;
 
-    Cow  cow  = new Cow();
-    Cat  cat  = new Cat();
+    Cow cow   = new Cow();
+    Cat cat   = new Cat();
     Bird bird = new Bird();
+
+    int tutorialNumbersOfCow = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,20 +65,25 @@ public class MainActivity extends AppCompatActivity {
         final MediaPlayer catSound  = MediaPlayer.create(this, R.raw.cat_meow);
         final MediaPlayer birdSound = MediaPlayer.create(this, R.raw.bird);
 
-        catImage = findViewById(R.id.catID);
-        catMini = findViewById(R.id.catMiniID);
+        catImage  = findViewById(R.id.catID);
+        catMini   = findViewById(R.id.catMiniID);
         cat1Small = findViewById(R.id.cat1ID);
         cat2Small = findViewById(R.id.cat2ID);
-        birdMini = findViewById(R.id.birdMiniMainID);
-        birdImage = findViewById(R.id.birdID);
-        soundOff = findViewById(R.id.soundOffID);
-        soundOn = findViewById(R.id.soundOnID);
-        cowImage = findViewById(R.id.cowID);
+
+        birdImage  = findViewById(R.id.birdID);
+        birdMini   = findViewById(R.id.birdMiniMainID);
+        bird1Small = findViewById(R.id.bird1ID);
+
+        cowImage  = findViewById(R.id.cowID);
         cow1Small = findViewById(R.id.cow1ID);
         cow2Small = findViewById(R.id.cow2ID);
         cow3Small = findViewById(R.id.cow3ID);
-        introducingCow = findViewById(R.id.introducingCowID);
-        introducingCloud = findViewById(R.id.introducingCloudID);
+
+        soundOff = findViewById(R.id.soundOnID);
+        soundOn  = findViewById(R.id.soundOffID);
+
+        introducingCow      = findViewById(R.id.introductionCowID);
+        introducingCloud    = findViewById(R.id.introductionCloudID);
         introducingTextView = findViewById(R.id.introductiongTextViewID);
 
         cowNumberTextView  = findViewById(R.id.cowNumberTextViewID);
@@ -84,7 +92,9 @@ public class MainActivity extends AppCompatActivity {
 
         upgradeButton = findViewById(R.id.upgradeID);
 
-//        tutorial();
+        tutorial();
+
+        //todo animacja tła
 
         upgradeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,11 +109,16 @@ public class MainActivity extends AppCompatActivity {
                     if (cow.isCowPurpleUnlocked()) {
                         bundle.putBoolean("cowPurple", true);
                     }
+                    if (!cat.isCatlocked()) {
+                        bundle.putBoolean("firstCat", true);
+                    }
                     if (cat.isCatInHatUnlocked()) {
                         bundle.putBoolean("catInHat", true);
                     }
-                }
-                catch (NullPointerException npe) {
+                    if (bird.isBirdUnlocked()) {
+                        bundle.putBoolean("firstBird", true);
+                    }
+                } catch (NullPointerException npe) {
                     npe.getMessage();
                 }
 
@@ -112,38 +127,22 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putInt("bird", bird.getBirdNumbers());
 
                 intent.putExtras(bundle);
-                startActivityForResult(intent,1);
+                startActivityForResult(intent, 1);
             }
         });
 
-        // PTAK
 
-        birdNumberTextView.setText(Integer.toString(bird.getBirdNumbers()));
-        birdImage.setOnClickListener(new View.OnClickListener() {
+        soundOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bird.isBirdLocked()) {
-                    createDialog("bird");
-                } else {
-                    birdSound.start();
-                    birdNumberTextView.setVisibility(VISIBLE);
-                    bird.setBirdNumbers(bird.getBirdNumbers() + 1);
-                    birdNumberTextView.setText(Integer.toString(bird.getBirdNumbers()));
-                }
+                soundOffOn("on", cowSound, catSound, birdSound);
             }
         });
 
         soundOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                soundOffOn("off", cowSound,catSound,birdSound);
-            }
-        });
-
-        soundOn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                soundOffOn("on", cowSound,catSound,birdSound);
+                soundOffOn("off", cowSound, catSound, birdSound);
             }
         });
 
@@ -165,8 +164,17 @@ public class MainActivity extends AppCompatActivity {
                 cow.setCowNumbers(cow.getCowNumbers() + 1);
                 cowNumberTextView.setText(Integer.toString(cow.getCowNumbers()));
 
-                if (cow.getCowNumbers() >= 10) {
-                    catImage.setVisibility(VISIBLE);
+                if (tutorialNumbersOfCow < 2) {
+                    if (cow.getCowNumbers() == 1) {
+                        tutorialNumbersOfCow = 1;
+                        tutorial();
+                    }
+                    if (cow.getCowNumbers() == 10) {
+                        tutorialNumbersOfCow = 2;
+                        tutorial();
+                    }
+                } else {
+                    tutorial();
                 }
             }
         });
@@ -174,47 +182,69 @@ public class MainActivity extends AppCompatActivity {
         // KOT
         //todo kot ma wskakakuje na drzewo
 
+        catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
+
         animalSmall(cat1Small, catImage, R.drawable.cat_anim);
         animalSmall(cat2Small, catImage, R.drawable.cat_in_hat_anim);
 
-        catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
         catImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cat.isCatlocked()) {
-                    createDialog("cat");
-                } else {
-                    catSound.start();
-                    animalAnimation(catImage, drawableResCat);
-                    catNumbersTextView.setVisibility(VISIBLE);
-                    cat.setCatNumbers(cat.getCatNumbers() + 1);
-                    catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
-                }
-                if (cat.getCatNumbers() >= 10) {
-                    birdImage.setVisibility(VISIBLE);
-                }
+                catSound.start();
+                animalAnimation(catImage, drawableResCat);
+                catNumbersTextView.setVisibility(VISIBLE);
+                cat.setCatNumbers(cat.getCatNumbers() + 1);
+                catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
             }
         });
 
-    }
+        // PTAK
+        //TODO animacja ptaka
 
-    public void tutorial () {
+        birdNumberTextView.setText(Integer.toString(bird.getBirdNumbers()));
 
-        cowImage.setEnabled(false);
-        final Animation animation = new AlphaAnimation(1f,0f);
+        animalSmall(bird1Small, birdImage, R.drawable.bird);
 
-        introducingTextView.setText("Hej!\nJestem Pan Krowa");
-        introducingTextView.setOnClickListener(new View.OnClickListener() {
+        birdImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                animation.setDuration(1500);
-                introducingTextView.setText("Powiem Tobie jak grać");
+                birdSound.start();
+                birdNumberTextView.setVisibility(VISIBLE);
+                bird.setBirdNumbers(bird.getBirdNumbers() + 1);
+                birdNumberTextView.setText(Integer.toString(bird.getBirdNumbers()));
             }
         });
+    }
 
-        Animation tutorialAnim = new AlphaAnimation(1f,0f);
-        tutorialAnim.setDuration(2000);
+    public void tutorial() {
+
+        upgradeButton.setEnabled(false);
+
+        introducingCow.setVisibility(VISIBLE);
+        introducingCloud.setVisibility(VISIBLE);
+        introducingTextView.setVisibility(VISIBLE);
+
+        switch (tutorialNumbersOfCow) {
+            case 0:
+                introducingTextView.setText("Hej Przyjacielu !!\nWidzisz te krowę na łące?\n\nKLIKNIJ W NIA");
+                break;
+            case 1:
+                introducingTextView.setText("Świetnie!!\nUzbieraj 10 krów");
+                break;
+            case 2:
+                upgradeButton.setEnabled(true);
+                introducingTextView.setText("Doskonale!!\nTeraz kliknij w przycisk\nULEPSZENIE");
+                break;
+            case 3:
+                introducingTextView.setText("Masz teraz nową krowę w okularach.\nZBIERAJ WIĘCEJ!");
+                break;
+            case 4:
+                introducingTextView.setVisibility(INVISIBLE);
+                introducingCloud.setVisibility(INVISIBLE);
+                introducingCow.setVisibility(INVISIBLE);
+                upgradeButton.setEnabled(true);
+                break;
+        }
 
     }
 
@@ -252,10 +282,16 @@ public class MainActivity extends AppCompatActivity {
                             drawableResCat = R.drawable.cat_in_hat_anim;
                         }
                     }
+
+                    if (animalImage == birdImage) {
+                        birdImage.setImageResource(resID);
+                        if (resID == R.drawable.bird) {
+                            drawableResCat = R.drawable.bird;
+                        }
+                    }
                 }
             });
     }
-
 
     public void soundOffOn (String onOff, final MediaPlayer cowSound, final MediaPlayer catSound, final MediaPlayer birdSound ) {
         switch (onOff) {
@@ -295,60 +331,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case "bird" :
-                    bird.setBirdLocked(false);
+                    bird.setBirdUnlocked(false);
                     birdImage.setVisibility(VISIBLE);
                     birdMini.setVisibility(VISIBLE);
                     birdNumberTextView.setVisibility(VISIBLE);
                     catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
-                break;
-        }
-    }
-
-    public void createDialog (String animal) {
-        switch (animal) {
-            case "cat" :
-                AlertDialog catDialog = new AlertDialog.Builder(this)
-                        .setTitle("Odblokuj Nowego Zwierzaka")
-                        .setMessage("Chcesz odblokować teraz?")
-                        .setCancelable(false)
-                        .setIcon(R.drawable.cat)
-                        .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                unlockAnimal("cat");
-                            }
-                        })
-                        .setNeutralButton("Później", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                catImage.setEnabled(true);
-                                cat.setCatLocked(true);
-                            }
-                        })
-                        .show();
-                break;
-
-            case "bird" :
-                AlertDialog birdDialod = new AlertDialog.Builder(this)
-                        .setTitle("Odblokuj Nowego Zwierzaka")
-                        .setMessage("Chcesz odblokować teraz?")
-                        .setCancelable(false)
-                        .setIcon(R.drawable.bird)
-                        .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                unlockAnimal("bird");
-                                upgradeButton.setEnabled(true);
-                            }
-                        })
-                        .setNeutralButton("Później", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                birdImage.setEnabled(true);
-                                bird.setBirdLocked(true);
-                            }
-                        })
-                        .show();
                 break;
         }
     }
@@ -361,8 +348,6 @@ public class MainActivity extends AppCompatActivity {
                 bundle = data.getExtras();
                try {
                    cow.setCowNumbers(bundle.getInt("cow"));
-                   cat.setCatNumbers(bundle.getInt("cat"));
-                   bird.setBirdNumbers(bundle.getInt("bird"));
                    cowNumberTextView.setText(Integer.toString(cow.getCowNumbers()));
                    if (bundle.getInt("cowInGlasses") == 1) {
                        cowImage.setImageDrawable(getDrawable(R.drawable.cow_in_glasses_anim));
@@ -370,12 +355,27 @@ public class MainActivity extends AppCompatActivity {
                        cow.setCowInGlassesUlkocked(true);
                        cow2Small.setVisibility(VISIBLE);
                    }
-
+                   if (bundle.getInt("tutorialNumbers") == 3) {
+                       tutorialNumbersOfCow = 3;
+                       introducingTextView.setText("Świetni!!\nMasz nową krowę!\nTAK TRZYMAJ!");
+                       tutorialNumbersOfCow ++;
+                   }
                    if (bundle.getInt("cowPurple") == 1) {
                        cowImage.setImageDrawable(getDrawable(R.drawable.cow_purple_anim));
                        drawableResCow = R.drawable.cow_purple_anim;
                        cow.setCowPurpleUnlocked(true);
                        cow3Small.setVisibility(VISIBLE);
+                   }
+
+                   cat.setCatNumbers(bundle.getInt("cat"));
+                   catNumbersTextView.setText(Integer.toString(cat.getCatNumbers()));
+                   if (bundle.getInt("firstCat") == 1) {
+                       catImage.setImageDrawable(getDrawable(R.drawable.cat_anim));
+                       drawableResCat = R.drawable.cat_anim;
+                       cat.setCatLocked(false);
+                       catImage.setVisibility(VISIBLE);
+                       catMini.setVisibility(VISIBLE);
+                       cat1Small.setVisibility(VISIBLE);
                    }
                    if (bundle.getInt("catInHat") == 1) {
                        catImage.setImageDrawable(getDrawable(R.drawable.cat_in_hat_anim));
@@ -383,6 +383,18 @@ public class MainActivity extends AppCompatActivity {
                        cat.setCatInHatUnlocked(true);
                        cat2Small.setVisibility(VISIBLE);
                    }
+
+                   bird.setBirdNumbers(bundle.getInt("bird"));
+                   birdNumberTextView.setText(Integer.toString(bird.getBirdNumbers()));
+                   if (bundle.getInt("firstBird") == 1) {
+                       birdImage.setImageDrawable(getDrawable(R.drawable.bird));
+                       drawableResBird = R.drawable.bird;
+                       bird.setBirdUnlocked(true);
+                       birdImage.setVisibility(VISIBLE);
+                       birdMini.setVisibility(VISIBLE);
+                       bird1Small.setVisibility(VISIBLE);
+                   }
+
                }
                catch (NullPointerException npe) {
                    npe.getMessage();

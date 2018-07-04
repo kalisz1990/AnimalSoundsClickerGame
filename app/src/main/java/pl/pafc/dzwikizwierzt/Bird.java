@@ -3,14 +3,14 @@ package pl.pafc.dzwikizwierzt;
 public class Bird {
 
     private int     birdNumbers = 0;
-    private boolean birdLocked = true;
+    private boolean birdUnlocked = false;
 
-    public boolean isBirdLocked() {
-        return birdLocked;
+    public boolean isBirdUnlocked() {
+        return birdUnlocked;
     }
 
-    public void setBirdLocked(boolean birdLocked) {
-        this.birdLocked = birdLocked;
+    public void setBirdUnlocked(boolean birdUnlocked) {
+        this.birdUnlocked = birdUnlocked;
     }
 
     public int getBirdNumbers() {

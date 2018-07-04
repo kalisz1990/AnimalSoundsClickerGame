@@ -2,7 +2,7 @@ package pl.pafc.dzwikizwierzt;
 
 public class Cow {
 
-    private int     cowNumbers = 15 ;
+    private int     cowNumbers = 0 ;
     private boolean cowInGlassesUnlocked = false;
     private boolean cowPurpleUnlocked = false;
 
